@@ -17,9 +17,22 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration (allow requests from Next.js client)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://a-iweb-generator.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
