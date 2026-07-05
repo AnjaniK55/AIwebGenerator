@@ -12,6 +12,19 @@ const checkSubscriptionLimit = async (req, res, next) => {
       return next();
     }
 
+    // Auto-downgrade if paid subscription has expired
+    if (
+      user.subscriptionPlan !== "free" &&
+      user.subscriptionExpiry &&
+      new Date(user.subscriptionExpiry) < new Date()
+    ) {
+      user.subscriptionPlan = "free";
+      user.subscriptionStatus = "inactive";
+      user.aiGenerationsLimit = 3;
+      user.aiGenerationsUsed = 0;
+      await user.save();
+    }
+
     if (user.aiGenerationsUsed >= user.aiGenerationsLimit) {
       return res.status(403).json({
         success: false,

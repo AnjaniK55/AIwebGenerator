@@ -114,11 +114,12 @@ const loginUser = async (req, res, next) => {
 // @route   POST /api/v1/auth/logout
 // @access  Private
 const logoutUser = (req, res, next) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", "none", {
     expires: new Date(Date.now() + 5000), // Clear immediately
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
   });
 
   res.status(200).json({

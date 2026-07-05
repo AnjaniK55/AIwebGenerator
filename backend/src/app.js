@@ -3,6 +3,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
 const router = require("./routes");
 const authRoutes = require("./routes/authRoutes");
 const projectRoutes = require("./routes/projectRoutes");
@@ -13,10 +14,39 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-// Security HTTP headers
+// ============================================================
+// SECURITY — HTTP Security Headers
+// ============================================================
 app.use(helmet());
 
-// CORS configuration (allow requests from Next.js client)
+// ============================================================
+// SECURITY — Rate Limiting
+// ============================================================
+// Global rate limiter: max 100 requests per 10 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests. Please wait and try again." },
+});
+
+// Auth limiter: max 10 login/register attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many authentication attempts. Try again in 15 minutes." },
+});
+
+app.use("/api/v1", globalLimiter);
+app.use("/api/v1/auth/login", authLimiter);
+app.use("/api/v1/auth/register", authLimiter);
+
+// ============================================================
+// CORS — Allow Vercel frontend and localhost dev
+// ============================================================
 const allowedOrigins = [
   "http://localhost:3000",
   "https://a-iweb-generator.vercel.app",
@@ -37,9 +67,14 @@ app.use(
   })
 );
 
-// Dev logging
-app.use(morgan("dev"));
+// ============================================================
+// LOGGING
+// ============================================================
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
+// ============================================================
+// BODY PARSERS
+// ============================================================
 // Parse cookie payloads
 app.use(cookieParser());
 
@@ -47,10 +82,12 @@ app.use(cookieParser());
 app.use("/api/v1/payment/webhook", express.raw({ type: "application/json" }));
 
 // Parse incoming request bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10kb" }));          // Prevent large payload attacks
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
-// Base API routes
+// ============================================================
+// API ROUTES
+// ============================================================
 app.use("/api/v1", router);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/projects", projectRoutes);
@@ -58,14 +95,18 @@ app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 
-// Catch-all route handler for unhandled requests
+// ============================================================
+// 404 HANDLER
+// ============================================================
 app.use((req, res, next) => {
   const error = new Error(`Resource Not Found - ${req.originalUrl}`);
   error.statusCode = 404;
   next(error);
 });
 
-// Global error handler
+// ============================================================
+// GLOBAL ERROR HANDLER
+// ============================================================
 app.use(errorHandler);
 
 module.exports = app;
