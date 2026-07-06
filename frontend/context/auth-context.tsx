@@ -52,7 +52,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (response.success && response.data) {
         setUser(response.data);
-        router.push("/dashboard");
+        // Redirect based on role
+        if (response.data.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Authentication credentials invalid.";
@@ -73,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (response.success && response.data) {
         setUser(response.data);
+        // New registrations are always regular users
         router.push("/dashboard");
       }
     } catch (err: unknown) {
@@ -107,7 +113,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (response.success && response.data) {
         setUser(response.data);
-        router.push("/dashboard");
+        // Redirect based on role
+        if (response.data.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Google OAuth authentication failed.";
