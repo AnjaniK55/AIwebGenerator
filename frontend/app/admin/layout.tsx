@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -35,21 +35,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Protected route checks
+  // Redirect after session check completes
+  useEffect(() => {
+    if (loading) return; // Wait for auth check
+    if (!user) {
+      router.push("/login"); // Not logged in → go to login
+    } else if (user.role !== "admin") {
+      router.push("/dashboard"); // Logged in but not admin → go to dashboard
+    }
+  }, [loading, user, router]);
+
+  // Show loading spinner while session is being validated
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 space-y-4">
         <div className="h-10 w-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Validating Credentials...</p>
+        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Validating Admin Credentials...</p>
       </div>
     );
   }
 
-  // Redirect if not logged in or role is not admin
+  // Don't render admin panel if not admin
   if (!user || user.role !== "admin") {
-    if (typeof window !== "undefined") {
-      router.push("/dashboard");
-    }
     return null;
   }
 
