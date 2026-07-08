@@ -17,12 +17,14 @@ import {
   LogOut,
   Bell,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 
 const sidebarLinks = [
   { href: "/admin", label: "Overview", icon: LayoutGrid },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/projects", label: "Projects", icon: FolderKanban },
+  { href: "/admin/consultations", label: "Consultations", icon: MessageSquare },
   { href: "/admin/clients", label: "Clients", icon: Contact },
   { href: "/admin/cms", label: "CMS System", icon: Sparkles },
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },

@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -31,6 +32,7 @@ export default function DashboardLayout({
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
     { label: "My Projects", href: "/dashboard/projects", icon: <FolderKanban className="h-5 w-5" /> },
     { label: "Create Website", href: "/dashboard/projects/create", icon: <PlusCircle className="h-5 w-5" /> },
+    { label: "AI Consultation", href: "/dashboard/ai-consultation", icon: <MessageSquare className="h-5 w-5" /> },
     { label: "Subscription", href: "/dashboard/subscription", icon: <Sparkles className="h-5 w-5" /> },
     { label: "Profile", href: "#", icon: <UserIcon className="h-5 w-5" /> },
     { label: "Settings", href: "#", icon: <Settings className="h-5 w-5" /> },

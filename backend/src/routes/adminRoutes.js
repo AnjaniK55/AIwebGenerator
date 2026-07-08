@@ -15,6 +15,8 @@ const {
   unblockUser,
 } = require("../controllers/adminController");
 
+const { getAllConsultations, deleteConsultation } = require("../controllers/consultationController");
+
 const {
   getServices,
   createService,
@@ -50,6 +52,10 @@ router.delete("/users/:id", deleteUser);
 router.get("/projects", getAllProjects);
 router.get("/clients", getAllClients);
 router.get("/analytics", getAnalytics);
+
+// Consultation management
+router.get("/consultations", getAllConsultations);
+router.delete("/consultations/:id", deleteConsultation);
 
 // ==========================================
 // CMS - SERVICES

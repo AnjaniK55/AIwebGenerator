@@ -10,6 +10,7 @@ const projectRoutes = require("./routes/projectRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const consultationRoutes = require("./routes/consultationRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -94,6 +95,7 @@ app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/consultation", consultationRoutes);
 
 // ============================================================
 // 404 HANDLER
