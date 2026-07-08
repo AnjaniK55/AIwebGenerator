@@ -17,6 +17,7 @@ const {
 
 const { getAllConsultations, deleteConsultation } = require("../controllers/consultationController");
 const { getAllBlueprints, deleteBlueprint: deleteBlueprintAdmin } = require("../controllers/blueprintController");
+const { getAllWireframes, deleteWireframe: deleteWireframeAdmin } = require("../controllers/wireframeController");
 
 const {
   getServices,
@@ -61,6 +62,10 @@ router.delete("/consultations/:id", deleteConsultation);
 // Blueprint management
 router.get("/blueprints", getAllBlueprints);
 router.delete("/blueprints/:id", deleteBlueprintAdmin);
+
+// Wireframe management
+router.get("/wireframes", getAllWireframes);
+router.delete("/wireframes/:id", deleteWireframeAdmin);
 
 // ==========================================
 // CMS - SERVICES

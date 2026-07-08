@@ -18,6 +18,7 @@ import {
   Sparkles,
   MessageSquare,
   FileJson,
+  LayoutGrid,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -35,6 +36,7 @@ export default function DashboardLayout({
     { label: "Create Website", href: "/dashboard/projects/create", icon: <PlusCircle className="h-5 w-5" /> },
     { label: "AI Consultation", href: "/dashboard/ai-consultation", icon: <MessageSquare className="h-5 w-5" /> },
     { label: "Website Blueprint", href: "/dashboard/blueprint", icon: <FileJson className="h-5 w-5" /> },
+    { label: "AI Wireframe", href: "/dashboard/wireframe", icon: <LayoutGrid className="h-5 w-5" /> },
     { label: "Subscription", href: "/dashboard/subscription", icon: <Sparkles className="h-5 w-5" /> },
     { label: "Profile", href: "#", icon: <UserIcon className="h-5 w-5" /> },
     { label: "Settings", href: "#", icon: <Settings className="h-5 w-5" /> },

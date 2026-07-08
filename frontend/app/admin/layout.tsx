@@ -19,6 +19,7 @@ import {
   Sparkles,
   MessageSquare,
   FileJson,
+  Layers,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -27,6 +28,7 @@ const sidebarLinks = [
   { href: "/admin/projects", label: "Projects", icon: FolderKanban },
   { href: "/admin/consultations", label: "Consultations", icon: MessageSquare },
   { href: "/admin/blueprints", label: "Blueprints", icon: FileJson },
+  { href: "/admin/wireframes", label: "Wireframes", icon: Layers },
   { href: "/admin/clients", label: "Clients", icon: Contact },
   { href: "/admin/cms", label: "CMS System", icon: Sparkles },
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },

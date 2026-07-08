@@ -230,8 +230,170 @@ ${JSON.stringify(consultationAnswers, null, 2)}`;
   }
 };
 
+const generateWebsiteWireframe = async (blueprintAnswers) => {
+  const apiKey = process.env.CLAUDE_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Anthropic API Key (CLAUDE_API_KEY) is not configured on the backend environment.");
+  }
+
+  const anthropic = new Anthropic({
+    apiKey,
+  });
+
+  const model = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
+
+  const systemPrompt = `You are a world-class principal UI/UX design architect and SaaS product designer.
+Your task is to analyze a website blueprint and output a highly detailed wireframe design system and page layout mapping.
+
+You MUST respond with a single valid JSON object ONLY. Do NOT write any conversational text, explanations, or preambles.
+The JSON payload must strictly follow this structure:
+{
+  "pages": [
+    {
+      "name": "Page Name (exactly one of: Home, About, Services, Portfolio, Pricing, Blog, Contact, FAQ, Privacy, Terms, Dashboard)",
+      "purpose": "Page purpose explanation",
+      "layout": {
+        "style": "One of: Full Width, Centered, Split Layout, Grid, Card Layout, Sidebar Layout, Dashboard Layout, Landing Layout, Magazine Layout",
+        "grid": "Grid column/row layout description",
+        "spacing": "Margins and paddings guidelines",
+        "containers": "Container width and alignment specs"
+      },
+      "hero": {
+        "headline": "Recommended hero headline text",
+        "subheadlinePosition": "Top/Bottom of headline - description",
+        "buttons": ["Button label + action type"],
+        "background": "Hero bg style: e.g. Gradient mesh, Obsidian glass",
+        "illustrationPosition": "Visual assets position description",
+        "imagePosition": "Main image placement",
+        "trustBadges": ["Trust elements/badges names"],
+        "statistics": ["Metric key + value"]
+      },
+      "sections": [
+        {
+          "name": "Section Name",
+          "order": 1,
+          "components": ["Component names in this section"],
+          "spacing": "Paddings/Margins for this section",
+          "layout": "Grid/Flex specifications",
+          "cta": "Call to action guidelines",
+          "images": ["Image descriptions"],
+          "icons": ["Icon names/purposes"],
+          "forms": ["Form labels and fields, if any"]
+        }
+      ],
+      "navigation": {
+        "placement": "Sticky header / Sidebar",
+        "items": ["Navbar items list"]
+      },
+      "footer": {
+        "placement": "Standard bottom / Minimal",
+        "items": ["Footer items list"]
+      }
+    }
+  ],
+  "colors": {
+    "primary": "#HEX (HEX values strictly)",
+    "secondary": "#HEX",
+    "accent": "#HEX",
+    "surface": "#HEX",
+    "background": "#HEX",
+    "text": "#HEX",
+    "border": "#HEX",
+    "success": "#HEX",
+    "warning": "#HEX",
+    "danger": "#HEX"
+  },
+  "typography": {
+    "headingFont": "Font Name (e.g. Outfit)",
+    "bodyFont": "Font Name (e.g. Inter)",
+    "buttonFont": "Font Name (e.g. Plus Jakarta Sans)",
+    "letterSpacing": "Letter spacing guidelines",
+    "lineHeight": "Line height guidelines",
+    "fontWeight": "Font weight distributions"
+  },
+  "designTokens": {
+    "borderRadius": "Border radius values",
+    "spacingScale": "Spacing step distributions",
+    "elevation": "Z-index layers mapping",
+    "shadow": "Shadow classes guidelines",
+    "glassEffect": "Glassmorphism blur/opacity parameters",
+    "gradient": "Primary background gradient tokens",
+    "roundedComponents": ["List of rounded elements"]
+  },
+  "components": [
+    {
+      "name": "Component Name (e.g. Navbar, Hero, Cards, Buttons, Inputs, Forms, Testimonials, Pricing, FAQ, Footer, Gallery, Timeline, Blog Cards, Contact Form, Statistics, CTA, Newsletter)",
+      "structure": "HTML/DOM visual architecture details",
+      "style": "Visual style guidelines"
+    }
+  ],
+  "designStyle": "One of: Minimal, Corporate, Startup, Luxury, Creative, Glassmorphism, Neumorphism, Modern SaaS, Material Inspired",
+  "responsive": {
+    "desktop": "Layout specs for Desktop",
+    "laptop": "Layout specs for Laptop",
+    "tablet": "Layout specs for Tablet",
+    "mobile": "Layout specs for Mobile"
+  },
+  "animations": {
+    "fade": "Fade transitions",
+    "slide": "Slide transitions",
+    "scale": "Scale transitions",
+    "hover": "Hover interactions",
+    "pageTransition": "Page transition effects",
+    "loadingAnimation": "Loader/Spinner styles",
+    "scrollAnimation": "Scroll animations"
+  },
+  "accessibility": {
+    "contrastRatio": "Contrast target ratio",
+    "keyboardNavigation": "Focus order and keyboard support",
+    "ariaSuggestions": ["Aria attributes mappings"],
+    "focusOrder": ["Focus order index sequence"],
+    "altTextRecommendations": "Alt text rules"
+  }
+}
+
+Verify the output is valid JSON before sending.`;
+
+  const userContent = `Generate the complete wireframe design system and page layout JSON using the following blueprint data:
+${JSON.stringify(blueprintAnswers, null, 2)}`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model,
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: userContent,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    let rawText = response.content[0].text.trim();
+
+    if (rawText.startsWith("```")) {
+      rawText = rawText.replace(/^```(json)?/, "").replace(/```$/, "").trim();
+    }
+
+    const parsedData = JSON.parse(rawText);
+    return {
+      model,
+      data: parsedData,
+    };
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error("AI returned an invalid JSON response payload format for wireframe. Please try again.");
+    }
+    throw error;
+  }
+};
+
 module.exports = {
   generateWebsiteStructure,
   generateWebsiteBlueprint,
+  generateWebsiteWireframe,
 };
 
