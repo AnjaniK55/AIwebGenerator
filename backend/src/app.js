@@ -11,6 +11,7 @@ const aiRoutes = require("./routes/aiRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const consultationRoutes = require("./routes/consultationRoutes");
+const blueprintRoutes = require("./routes/blueprintRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -96,6 +97,7 @@ app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/consultation", consultationRoutes);
+app.use("/api/v1/blueprint", blueprintRoutes);
 
 // ============================================================
 // 404 HANDLER

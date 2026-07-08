@@ -5,20 +5,22 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { Project, ApiResponse } from "@/types";
-import { Folder, PlusCircle, ArrowRight, MessageSquare, CheckCircle2, Clock } from "lucide-react";
+import { Folder, PlusCircle, ArrowRight, MessageSquare, CheckCircle2, Clock, FileJson } from "lucide-react";
 
 export default function DashboardHome() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [consultationStatus, setConsultationStatus] = useState<"not_started" | "in_progress" | "completed">("not_started");
+  const [blueprintStatus, setBlueprintStatus] = useState<"not_started" | "pending" | "completed">("not_started");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projRes, consultRes] = await Promise.allSettled([
+        const [projRes, consultRes, blueprintRes] = await Promise.allSettled([
           apiClient<ApiResponse<Project[]>>("/projects"),
           apiClient<ApiResponse<{ data: { status: string }[] }>>("/consultation/my"),
+          apiClient<ApiResponse<{ data: { status: string }[] }>>("/blueprint/user"),
         ]);
         if (projRes.status === "fulfilled" && projRes.value.success && projRes.value.data) {
           setProjects(projRes.value.data as Project[]);
@@ -28,6 +30,13 @@ export default function DashboardHome() {
           if (Array.isArray(consultations) && consultations.length > 0) {
             const latest = consultations[0];
             setConsultationStatus(latest.status as "not_started" | "in_progress" | "completed");
+          }
+        }
+        if (blueprintRes.status === "fulfilled" && blueprintRes.value.success) {
+          const blueprints = (blueprintRes.value as unknown as { data: { status: string }[] }).data;
+          if (Array.isArray(blueprints) && blueprints.length > 0) {
+            const latest = blueprints[0];
+            setBlueprintStatus(latest.status as "not_started" | "pending" | "completed");
           }
         }
       } catch {
@@ -96,38 +105,74 @@ export default function DashboardHome() {
         ))}
       </div>
 
-      {/* AI Consultation Card */}
-      <Link
-        href="/dashboard/ai-consultation"
-        id="card_ai_consultation"
-        className="flex items-center justify-between p-5 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/60 to-violet-950/40 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
-      >
-        <div className="flex items-center gap-4">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform">
-            <MessageSquare className="h-5 w-5 text-white" />
+      {/* Quick Action Panels Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* AI Consultation Card */}
+        <Link
+          href="/dashboard/ai-consultation"
+          id="card_ai_consultation"
+          className="flex items-center justify-between p-5 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/60 to-violet-950/40 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+              <MessageSquare className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">AI Consultation</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Answer 25 questions · Plan layout</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-white">AI Website Consultation</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Answer 25 questions · Get your perfect website plan</p>
+          <div className="flex items-center gap-3">
+            {consultationStatus === "completed" ? (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
+                <CheckCircle2 className="h-3 w-3" /> Completed
+              </span>
+            ) : consultationStatus === "in_progress" ? (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wide">
+                <Clock className="h-3 w-3" /> In Progress
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                Not Started
+              </span>
+            )}
+            <ArrowRight className="h-4 w-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {consultationStatus === "completed" ? (
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
-              <CheckCircle2 className="h-3 w-3" /> Completed
-            </span>
-          ) : consultationStatus === "in_progress" ? (
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wide">
-              <Clock className="h-3 w-3" /> In Progress
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-              Not Started
-            </span>
-          )}
-          <ArrowRight className="h-4 w-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
-        </div>
-      </Link>
+        </Link>
+
+        {/* Website Blueprint Card */}
+        <Link
+          href="/dashboard/blueprint"
+          id="card_website_blueprint"
+          className="flex items-center justify-between p-5 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/60 to-violet-950/40 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+              <FileJson className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Website Blueprint</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Explore compiled architecture blueprint</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {blueprintStatus === "completed" ? (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
+                <CheckCircle2 className="h-3 w-3" /> Ready
+              </span>
+            ) : blueprintStatus === "pending" ? (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wide animate-pulse">
+                <Clock className="h-3 w-3" /> Generating
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                Not Started
+              </span>
+            )}
+            <ArrowRight className="h-4 w-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </Link>
+      </div>
 
       {/* Recent Projects List */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-6">
