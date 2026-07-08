@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
-import { ApiResponse } from "@/types";
 import {
   FileJson,
   Search,
@@ -39,6 +38,7 @@ interface Blueprint {
 }
 
 interface AdminBlueprintsResponse {
+  success: boolean;
   count: number;
   stats: {
     total: number;
@@ -67,12 +67,12 @@ export default function AdminBlueprintsPage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (search) params.set("search", search);
 
-      const res = await apiClient<ApiResponse<AdminBlueprintsResponse>>(
+      const res = await apiClient<AdminBlueprintsResponse>(
         `/admin/blueprints?${params.toString()}`
       );
       if (res.success && res.data) {
-        setBlueprints(res.data.data);
-        setStats(res.data.stats);
+        setBlueprints(res.data);
+        setStats(res.stats);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load blueprints.");
