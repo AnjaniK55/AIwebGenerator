@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";
 import Script from "next/script";
-import { Sparkles, Mail, Lock, ShieldAlert } from "lucide-react";
+import { Sparkles, Mail, Lock, ShieldAlert, ArrowLeft } from "lucide-react";
 
 interface GoogleAccountID {
   initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
@@ -127,8 +127,15 @@ export default function LoginPage() {
         }}
       />
 
-      <div className="w-full max-w-md rounded-2xl border border-white/5 bg-slate-900/40 p-8 shadow-2xl glassmorphism">
-        <div className="flex flex-col items-center mb-8">
+      <div className="w-full max-w-md flex flex-col gap-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors self-start ml-1"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Home
+        </Link>
+        <div className="w-full rounded-2xl border border-white/5 bg-slate-900/40 p-8 shadow-2xl glassmorphism">
+          <div className="flex flex-col items-center mb-8">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 mb-4">
             <Sparkles className="h-6 w-6" />
           </span>
@@ -222,6 +229,7 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+     </div>
     </div>
   );
 }
