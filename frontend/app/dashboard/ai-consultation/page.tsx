@@ -17,9 +17,38 @@ import {
   ChevronDown,
   FileJson,
   X,
+  ArrowLeft,
 } from "lucide-react";
 
 const TOTAL_QUESTIONS = 25;
+
+const ANSWER_KEYS = [
+  "businessName",
+  "businessType",
+  "websiteGoal",
+  "targetAudience",
+  "brandPersonality",
+  "colorPreference",
+  "typographyStyle",
+  "sectionsNeeded",
+  "hasLogo",
+  "logoUrl",
+  "primaryFeatures",
+  "integrations",
+  "multilingual",
+  "ecommerceSupport",
+  "paymentGateways",
+  "contentStrategy",
+  "blogRequired",
+  "portfolioRequired",
+  "socialLinks",
+  "seoKeywords",
+  "contactMethod",
+  "budgetRange",
+  "timelinePreference",
+  "hostingPreference",
+  "notes"
+];
 
 interface Message {
   _id?: string;
@@ -135,6 +164,50 @@ export default function AIConsultationPage() {
   };
 
   const handleSkip = () => sendMessage("Skip");
+
+  const handleGoBack = async () => {
+    if (!consultation || loading || consultation.currentStep === 0) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient<ApiResponse<ConsultationResponse>>("/consultation/back", {
+        method: "POST",
+        body: JSON.stringify({ consultationId: consultation._id }),
+      });
+      if (res.success && res.data) {
+        const updated = (res.data as unknown as ConsultationResponse).data ?? (res.data as unknown as Consultation);
+        setConsultation(updated);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to go back.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditAnswer = async (messageIndex: number, newText: string) => {
+    if (!consultation || loading) return;
+    const answerIndex = Math.floor((messageIndex - 1) / 2);
+    const key = ANSWER_KEYS[answerIndex];
+    if (!key) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient<ApiResponse<ConsultationResponse>>("/consultation/update", {
+        method: "PUT",
+        body: JSON.stringify({ consultationId: consultation._id, key, value: newText }),
+      });
+      if (res.success && res.data) {
+        const updated = (res.data as unknown as ConsultationResponse).data ?? (res.data as unknown as Consultation);
+        setConsultation(updated);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to update answer.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -255,6 +328,11 @@ export default function AIConsultationPage() {
             role={msg.role}
             content={msg.content}
             timestamp={msg.createdAt}
+            onEdit={
+              msg.role === "user" && !isComplete
+                ? (newText) => handleEditAnswer(i, newText)
+                : undefined
+            }
           />
         ))}
 
@@ -322,6 +400,19 @@ export default function AIConsultationPage() {
 
             {/* Action buttons */}
             <div className="flex items-center gap-2">
+              {consultation.currentStep > 0 && (
+                <>
+                  <button
+                    onClick={handleGoBack}
+                    disabled={loading || isTyping}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-40"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Back
+                  </button>
+                  <span className="text-slate-700 text-xs">•</span>
+                </>
+              )}
               <button
                 onClick={handleSkip}
                 disabled={loading || isTyping}

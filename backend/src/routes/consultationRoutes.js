@@ -9,6 +9,7 @@ const {
   updateAnswer,
   completeConsultation,
   deleteConsultation,
+  goBack,
 } = require("../controllers/consultationController");
 
 // All routes require authentication
@@ -25,6 +26,9 @@ router.post("/message", sendMessage);
 
 // Edit a previous answer
 router.put("/update", updateAnswer);
+
+// Go back to previous step
+router.post("/back", goBack);
 
 // Get consultation by ID
 router.get("/:id", getConsultation);

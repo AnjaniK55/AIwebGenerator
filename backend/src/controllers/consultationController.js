@@ -286,6 +286,57 @@ const completeConsultation = async (req, res, next) => {
 };
 
 // ============================================================
+// @desc    Go back to previous question
+// @route   POST /api/v1/consultation/back
+// @access  Private
+// ============================================================
+const goBack = async (req, res, next) => {
+  try {
+    const { consultationId } = req.body;
+    if (!consultationId) {
+      return res.status(400).json({ success: false, message: "consultationId is required." });
+    }
+
+    const consultation = await Consultation.findById(consultationId);
+    if (!consultation) {
+      return res.status(404).json({ success: false, message: "Consultation not found." });
+    }
+    if (consultation.userId.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Access denied." });
+    }
+    if (consultation.currentStep === 0) {
+      return res.status(400).json({ success: false, message: "Cannot go back from the first step." });
+    }
+
+    // Revert last step answer
+    const prevKey = ANSWER_KEYS[consultation.currentStep - 1];
+    if (prevKey) {
+      consultation.answers[prevKey] = "";
+    }
+
+    // Decrement current step
+    consultation.currentStep -= 1;
+    consultation.status = "in_progress";
+    consultation.generatedJSON = null;
+
+    // Pop the user response and the assistant follow-up/complete prompt
+    if (consultation.messages.length >= 2) {
+      consultation.messages.pop(); // Pop assistant question
+      consultation.messages.pop(); // Pop user answer
+    }
+
+    await consultation.save();
+
+    res.status(200).json({
+      success: true,
+      data: consultation,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ============================================================
 // @desc    Delete consultation
 // @route   DELETE /api/v1/consultation/:id
 // @access  Private (owner or admin)
@@ -348,5 +399,6 @@ module.exports = {
   completeConsultation,
   deleteConsultation,
   getAllConsultations,
+  goBack,
   QUESTIONS,
 };
