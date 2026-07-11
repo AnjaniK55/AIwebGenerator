@@ -43,9 +43,11 @@ const authLimiter = rateLimit({
   message: { success: false, message: "Too many authentication attempts. Try again in 15 minutes." },
 });
 
-app.use("/api/v1", globalLimiter);
-app.use("/api/v1/auth/login", authLimiter);
-app.use("/api/v1/auth/register", authLimiter);
+if (process.env.NODE_ENV === "production") {
+  app.use("/api/v1", globalLimiter);
+  app.use("/api/v1/auth/login", authLimiter);
+  app.use("/api/v1/auth/register", authLimiter);
+}
 
 // ============================================================
 // CORS — Allow Vercel frontend and localhost dev
